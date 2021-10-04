@@ -1,6 +1,7 @@
 {
   "scripts": {
     "build": "webpack",
+    "build:protoc": "protoc -Iproto --js_out=import_style=commonjs:src --grpc-web_out=import_style=typescript,mode=grpcweb:src proto/avninv/catalog/v1/catalog.proto proto/google/api/*.proto",
     "serve": "webpack-dev-server"
   },
   "devDependencies": {
