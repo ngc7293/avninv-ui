@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.nenv/
+.vscode/
+src/**/*_pb.js
+src/**/*_pb.d.ts
+src/**/*Pb.ts
