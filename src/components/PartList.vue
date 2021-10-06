@@ -1,13 +1,11 @@
 <template>
-    <table>
+    <table class="data-table">
         <tr>
             <th>MFG Part No</th>
             <th>Description</th>
         </tr>
-        <tr v-for="part in parts" :key="part.getManufacturerPartNumber()">
-            <td>{{ part.getManufacturerPartNumber() }}</td>
-            <td>{{ part.getDescription() }}</td>
-        </tr>
+        <part-row v-for="part in parts" :key="part.getManufacturerPartNumber()" :part="part" :client="client"/>
+        <part-row :part="null" :client="client"/>
     </table>
 </template>
 
@@ -15,6 +13,7 @@
 import { defineComponent } from 'vue'
 import { ListPartRequest, ListPartResponse, Part } from '../avninv/catalog/v1/catalog_pb';
 import { CatalogClient } from '../avninv/catalog/v1/CatalogServiceClientPb';
+import PartRow from './PartRow.vue';
 
 export default defineComponent({
     data() {
@@ -24,6 +23,9 @@ export default defineComponent({
     },
     props: {
         client: CatalogClient
+    },
+    components: {
+        'part-row': PartRow
     },
     methods: {
         listParts() {
@@ -35,8 +37,6 @@ export default defineComponent({
                         console.log('[' + err.code + '] ' + err.message);
                     } else {
                         this.parts = response.getPartsList();
-                        this.parts[0].getManufacturerPartNumber
-                        console.log('Parts: ' + this.parts.length);
                     }
                 });
             }
@@ -49,5 +49,4 @@ export default defineComponent({
 </script>
 
 <style scoped>
-
 </style>

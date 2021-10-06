@@ -1,0 +1,27 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap');
+
+body {
+    font-family: 'Open Sans', sans-serif;
+}
+
+table.data-table {
+    text-align: left;
+    border-collapse: collapse;
+}
+
+table.data-table th {
+    height: 56px;
+    padding: 0 16px;
+}
+
+table.data-table td {
+    height: 52px;
+    padding: 0 16px;
+    border-style: solid;
+    border-color: #a0a0a0;
+    border-width: 1px 0;
+}
+
+table.data-table tr:hover {
+    background-color: #c0c0c0;
+}

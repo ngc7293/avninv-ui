@@ -24,7 +24,7 @@ export default defineComponent({
     },
     methods: {
         makeClient(): CatalogClient {
-            return new CatalogClient('http://0.0.0.0:8081');
+            return new CatalogClient('http://35.203.20.187:8081');
         }
     }
 });
