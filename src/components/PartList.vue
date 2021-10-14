@@ -5,7 +5,7 @@
             <th>Description</th>
         </tr>
         <part-row v-for="part in parts" :key="part.getManufacturerPartNumber()" :part="part" :client="client"/>
-        <part-row :part="null" :client="client"/>
+        <part-row :part="emptyPart()" :client="client"/>
     </table>
 </template>
 
@@ -40,6 +40,9 @@ export default defineComponent({
                     }
                 });
             }
+        },
+        emptyPart() {
+            return new Part();
         }
     },
     mounted() {

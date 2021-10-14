@@ -1,79 +1,65 @@
 <template>
     <tr>
-        <td>
-            <select :value="part ? part.getType() : 'none'" v-model="data.type">
-                <option value="none"></option>
-                <option value="resistance">Resitance</option>
-                <option value="chip">Chip</option>
-            </select>
-        </td>
-        <td v-if="part">{{ data.mfgpn }}</td>
-        <td v-if="!part"><input type="text" v-model="data.mfgpn"/></td>
-        <td v-if="part">{{ data.description }}</td>
-        <td v-if="!part"><input type="text" v-model="data.description"/></td>
-        <td>
-            <button v-if="!part" v-on:click="createPart">Add</button>
-            <button v-if="part" v-on:click="deletePart">Remove</button>
-        </td>
+        <td><io-select v-model="type" :edit=edit :options="makeTypeOptions()" /></td>
+        <td><io-input v-model="manufacturerPartNumber" :edit="edit"/></td>
+        <td><io-input v-model="description" :edit="edit"/></td>
+        <td><button @click="edit = !edit">edit</button></td>
     </tr>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { CatalogClient } from '../avninv/catalog/v1/CatalogServiceClientPb';
-import { CreatePartRequest, Part } from '../avninv/catalog/v1/catalog_pb';
+import { Part } from '../avninv/catalog/v1/catalog_pb';
+
+import Input from './io/Input.vue';
+import Select from './io/Select.vue'
 
 export default defineComponent({
     data() {
         return {
-            editable: false,
-            data: {
-                type: '',
-                mfgpn: '',
-                description: ''
-            }
+            edit: false,
+            localPart: new Part()
         };
     },
     props: {
-        client: CatalogClient,
-        part: Part,
+        client: { type: CatalogClient, required: true },
+        part: { type: Part, default: null },
+    },
+    components: {
+        'io-input': Input,
+        'io-select': Select
+    },
+    computed: {
+        type: {
+            get() { return this.localPart.getType(); },
+            set(value: string) { this.localPart.setType(value); }
+        },
+        manufacturerPartNumber: {
+            get() { return this.localPart.getManufacturerPartNumber(); },
+            set(value: string) { this.localPart.setManufacturerPartNumber(value); }
+        },
+        description: {
+            get() { return this.localPart.getDescription(); },
+            set(value: string) { this.localPart.setDescription(value); }
+        }
     },
     methods: {
         createPart(event: Event) {
-            console.log('Create')
-            console.log(this.editable)
-            console.log(this.part === null)
-            console.log(this.client)
-            if (this.editable && this.part === null && this.client) {
-                let part = new Part();
-                part.setType(this.data.type);
-                part.setManufacturerPartNumber(this.data.mfgpn);
-                part.setDescription(this.data.description);
-
-                let request = new CreatePartRequest();
-                request.setParent('org/main/parts');
-                request.setPart(part);
-                this.client.createPart(request, {}, (err, response) => {
-                    if (err) {
-                        console.log('[' + err.code + '] ' + err.message)
-                    }
-                });
-            }
         },
-        updateData() {
-            if (this.part) {
-                this.data = {
-                    type: this.part.getType(),
-                    mfgpn: this.part.getManufacturerPartNumber(),
-                    description: this.part.getDescription()
-                }
-            }
+        makeTypeOptions() {
+            return [
+                { id: "resistor", display: "Resistor" },
+                { id: "chip", display: "Chip" }
+            ]
         }
     },
     mounted() {
-        this.updateData();
         if (this.part === null) {
-            this.editable = true;
+            this.localPart = new Part();
+            this.edit = true;
+        } else {
+            this.localPart = this.part;
         }
     }
 });
