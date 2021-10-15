@@ -1,18 +1,17 @@
 <template>
     <table class="data-table">
         <tr>
+            <th>Type</th>
             <th>MFG Part No</th>
             <th>Description</th>
         </tr>
-        <part-row v-for="part in parts" :key="part.getManufacturerPartNumber()" :part="part" :client="client"/>
-        <part-row :part="emptyPart()" :client="client"/>
+        <part-row v-for="part in parts" :key="part.getManufacturerPartNumber()" :name="part.getName()" />
     </table>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { ListPartRequest, ListPartResponse, Part } from '../avninv/catalog/v1/catalog_pb';
-import { CatalogClient } from '../avninv/catalog/v1/CatalogServiceClientPb';
+import { Part } from '../avninv/catalog/v1/catalog_pb';
 import PartRow from './PartRow.vue';
 
 export default defineComponent({
@@ -21,25 +20,13 @@ export default defineComponent({
             parts: new Array<Part>()
         };
     },
-    props: {
-        client: CatalogClient
-    },
     components: {
         'part-row': PartRow
     },
     methods: {
-        listParts() {
-            if (this.client) {
-                let request = new ListPartRequest();
-                request.setParent('org/main/parts');
-                this.client.listParts(request, {}, (err, response: ListPartResponse): void => {
-                    if (err) {
-                        console.log('[' + err.code + '] ' + err.message);
-                    } else {
-                        this.parts = response.getPartsList();
-                    }
-                });
-            }
+        async listParts() {
+            await this.$store.dispatch('fetchParts');
+            this.parts = this.$store.state.parts;
         },
         emptyPart() {
             return new Part();

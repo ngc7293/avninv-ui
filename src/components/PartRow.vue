@@ -3,13 +3,15 @@
         <td><io-select v-model="type" :edit=edit :options="makeTypeOptions()" /></td>
         <td><io-input v-model="manufacturerPartNumber" :edit="edit"/></td>
         <td><io-input v-model="description" :edit="edit"/></td>
-        <td><button @click="edit = !edit">edit</button></td>
+        <td>
+            <div v-if="!edit"><i class="fas fa-edit" @click="edit = true" /></div>
+            <div v-else><i class="fas fa-save" @click="saveEdit" /> <i class="fas fa-ban" @click="cancelEdit"/></div>
+        </td>
     </tr>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { CatalogClient } from '../avninv/catalog/v1/CatalogServiceClientPb';
 import { Part } from '../avninv/catalog/v1/catalog_pb';
 
 import Input from './io/Input.vue';
@@ -23,8 +25,7 @@ export default defineComponent({
         };
     },
     props: {
-        client: { type: CatalogClient, required: true },
-        part: { type: Part, default: null },
+        name: { type: String, default: null },
     },
     components: {
         'io-input': Input,
@@ -45,7 +46,12 @@ export default defineComponent({
         }
     },
     methods: {
-        createPart(event: Event) {
+        saveEdit() {
+            this.$store.dispatch('updatePart', this.localPart);
+        },
+        cancelEdit() {
+            this.localPart = this.$store.getters.getPartByName(this.name).clone();
+            this.edit = false;
         },
         makeTypeOptions() {
             return [
@@ -55,15 +61,13 @@ export default defineComponent({
         }
     },
     mounted() {
-        if (this.part === null) {
-            this.localPart = new Part();
-            this.edit = true;
-        } else {
-            this.localPart = this.part;
-        }
+        this.localPart = this.$store.getters.getPartByName(this.name).clone();
     }
 });
 </script>
 
 <style scoped>
+.fa-edit:hover {
+    color:red;
+}
 </style>

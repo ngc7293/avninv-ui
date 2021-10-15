@@ -18,10 +18,10 @@ table.data-table td {
     height: 52px;
     padding: 0 16px;
     border-style: solid;
-    border-color: #a0a0a0;
+    border-color: #ccc;
     border-width: 1px 0;
 }
 
 table.data-table tr:hover {
-    background-color: #c0c0c0;
+    background-color: #f0f0f0;
 }
