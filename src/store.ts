@@ -26,7 +26,7 @@ export default createStore({
     actions: {
         async fetchParts({ state }) {
             let request = new ListPartRequest();
-            request.setParent('org/main/parts');
+            request.setParent('orgs/main/parts');
             let response = await state.client.listParts(request, {});
             this.commit('setParts', response.getPartsList());
         },
