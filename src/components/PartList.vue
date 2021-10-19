@@ -4,8 +4,10 @@
             <th>Type</th>
             <th>MFG Part No</th>
             <th>Description</th>
+            <th class="number">Quantity</th>
         </tr>
-        <part-row v-for="part in parts" :key="part.getManufacturerPartNumber()" :name="part.getName()" />
+        <part-row v-for="part in parts" :key="part.getName()" :name="part.getName()" />
+        <part-row :creating="true" />
     </table>
 </template>
 
@@ -34,6 +36,11 @@ export default defineComponent({
     },
     mounted() {
         this.listParts();
+        this.$store.subscribe((mutation, state) => {
+            if (mutation.type == 'setParts') {
+                this.parts = state.parts;
+            }
+        })
     }
 });
 </script>

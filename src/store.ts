@@ -1,8 +1,7 @@
 import { createStore, createLogger} from 'vuex';
 
-import { ListPartRequest, Part, UpdatePartRequest } from './avninv/catalog/v1/catalog_pb';
+import { CreatePartRequest, DeletePartRequest, ListPartRequest, Part, UpdatePartRequest } from './avninv/catalog/v1/catalog_pb';
 import { CatalogClient } from './avninv/catalog/v1/CatalogServiceClientPb';
-import { request } from 'http';
 
 interface State {
     client: CatalogClient;
@@ -27,15 +26,49 @@ export default createStore({
         async fetchParts({ state }) {
             let request = new ListPartRequest();
             request.setParent('orgs/main/parts');
+
             let response = await state.client.listParts(request, {});
             this.commit('setParts', response.getPartsList());
+        },
+        async createPart({ state }, part: Part) {
+            let request = new CreatePartRequest();
+            request.setParent('orgs/main/parts');
+            request.setPart(part);
+
+            try {
+                await state.client.createPart(request, {});
+                await this.dispatch('fetchParts');
+                return true
+            } catch (error) {
+                console.log(error);
+                return false;
+            }
+        },
+        async deletePart({ state }, part: Part) {
+            let request = new DeletePartRequest();
+            request.setName(part.getName());
+            
+            try {
+                await state.client.deletePart(request, {});
+            } catch (error) {
+                console.log(error);
+            }
+
+            await this.dispatch('fetchParts');
         },
         async updatePart({ state }, part: Part) {
             let request = new UpdatePartRequest();
             request.setName(part.getName());
             request.setPart(part);
-            await state.client.updatePart(request, {});
-            await this.dispatch('fetchParts');
+
+            try {
+                await state.client.updatePart(request, {});
+                await this.dispatch('fetchParts');
+                return true;
+            } catch (error) {
+                console.log(error);
+                return false;
+            }
         }
     },
     plugins: [createLogger()]

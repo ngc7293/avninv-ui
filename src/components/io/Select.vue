@@ -1,9 +1,9 @@
 <template>
     <div>
-        <select v-if="edit" v-model="display" @blur="update">
+        <select v-if="editing" v-model="display" @blur="update">
             <option v-for="option in options" :key="option.id">{{ option.display }}</option>
         </select>
-        <span v-if="!edit">{{ display }}</span>
+        <span v-if="!editing">{{ display }}</span>
     </div>
 </template>
 
@@ -24,7 +24,7 @@ export default defineComponent({
             type: Array,
             required: true
         },
-        edit: {
+        editing: {
             type: Boolean,
             required: true
         }
@@ -50,12 +50,15 @@ export default defineComponent({
     },
     methods: {
         update(_: any) {
-
+            this.$emit('update:modelValue', this.localValue);
         }
     },
     mounted() {
         this.$nextTick(() => {
             this.localValue = this.modelValue;
+            if (this.options) {
+                this.display = (this.options[0] as {display: string}).display;
+            }
         });
     }
 });

@@ -1,11 +1,18 @@
 <template>
     <tr>
-        <td><io-select v-model="type" :edit=edit :options="makeTypeOptions()" /></td>
-        <td><io-input v-model="manufacturerPartNumber" :edit="edit"/></td>
-        <td><io-input v-model="description" :edit="edit"/></td>
+        <td><io-select v-model="schemaName" :editing=editing :options="makeSchemaNameOptions()" /></td>
+        <td><io-input type="text" v-model="manufacturerPartNumber" :editing="editing"/></td>
+        <td><io-input type="text" v-model="description" :editing="editing"/></td>
+        <td class="number"><io-spinner v-model="quantity" :editing="editing"/></td>
         <td>
-            <div v-if="!edit"><i class="fas fa-edit" @click="edit = true" /></div>
-            <div v-else><i class="fas fa-save" @click="saveEdit" /> <i class="fas fa-ban" @click="cancelEdit"/></div>
+            <div v-if="!editing">
+                <i class="fas fa-edit" @click="editing = true" />
+                <i class="fas fa-trash" @click="deletePart" />
+            </div>
+            <div v-else>
+                <i class="fas fa-save" @click="saveEdit" />
+                <i class="fas fa-undo" @click="cancelEdit"/>
+            </div>
         </td>
     </tr>
 </template>
@@ -14,60 +21,88 @@
 import { defineComponent } from 'vue'
 import { Part } from '../avninv/catalog/v1/catalog_pb';
 
-import Input from './io/Input.vue';
+import StringInput from './io/StringInput.vue';
+import NumberInput from './io/NumberInput.vue';
 import Select from './io/Select.vue'
 
 export default defineComponent({
     data() {
         return {
-            edit: false,
-            localPart: new Part()
+            editing: false,
+            part: new Part()
         };
     },
     props: {
         name: { type: String, default: null },
+        creating: { type: Boolean, default: false }
     },
     components: {
-        'io-input': Input,
+        'io-input': StringInput,
+        'io-spinner': NumberInput,
         'io-select': Select
     },
     computed: {
-        type: {
-            get() { return this.localPart.getType(); },
-            set(value: string) { this.localPart.setType(value); }
+        schemaName: {
+            get() { return this.part.getSchemaName(); },
+            set(value: string) { this.part.setSchemaName(value); }
         },
         manufacturerPartNumber: {
-            get() { return this.localPart.getManufacturerPartNumber(); },
-            set(value: string) { this.localPart.setManufacturerPartNumber(value); }
+            get() { return this.part.getManufacturerPartNumber(); },
+            set(value: string) { this.part.setManufacturerPartNumber(value); }
         },
         description: {
-            get() { return this.localPart.getDescription(); },
-            set(value: string) { this.localPart.setDescription(value); }
+            get() { return this.part.getDescription(); },
+            set(value: string) { this.part.setDescription(value); }
+        },
+        quantity: {
+            get() { return this.part.getQuantity(); },
+            set(value: number) { this.part.setQuantity(value); }
         }
     },
     methods: {
-        saveEdit() {
-            this.$store.dispatch('updatePart', this.localPart);
+        async saveEdit() {
+            let rc: boolean = false;
+            if (this.creating) {
+                rc = await this.$store.dispatch('createPart', this.part);
+            } else {
+                rc = await this.$store.dispatch('updatePart', this.part);
+                this.editing = false;
+            }
         },
         cancelEdit() {
-            this.localPart = this.$store.getters.getPartByName(this.name).clone();
-            this.edit = false;
+            if (this.creating) {
+                this.part = new Part();
+            } else {
+                this.part = this.$store.getters.getPartByName(this.name).clone();
+                this.editing = false;
+            }
         },
-        makeTypeOptions() {
+        deletePart() {
+            this.$store.dispatch('deletePart', this.part);
+        },
+        makeSchemaNameOptions() {
             return [
-                { id: "resistor", display: "Resistor" },
-                { id: "chip", display: "Chip" }
+                { id: "orgs/main/partschema/resistor", display: "Resistor" },
+                { id: "orgs/main/partschema/chip", display: "Chip" }
             ]
         }
     },
     mounted() {
-        this.localPart = this.$store.getters.getPartByName(this.name).clone();
+        if (this.creating) {
+            this.part = new Part();
+            this.editing = true;
+        } else {
+            this.part = this.$store.getters.getPartByName(this.name).clone();
+        }
     }
 });
 </script>
 
 <style scoped>
-.fa-edit:hover {
+.fas:hover {
     color:red;
+}
+.fas {
+    margin-right: 1em;
 }
 </style>

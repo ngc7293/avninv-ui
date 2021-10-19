@@ -1,7 +1,7 @@
 <template>
     <div>
-        <input v-if="edit" v-model.lazy="localValue" @blur="update"/>
-        <span v-if="!edit">{{ modelValue }}</span>
+        <input v-if="editing" v-model="localValue" @change="update"/>
+        <span v-if="!editing">{{ modelValue }}</span>
     </div>
 </template>
 
@@ -18,7 +18,7 @@ export default defineComponent({
             type: String,
             required: true
         },
-        edit: {
+        editing: {
             type: Boolean,
             required: true
         }
@@ -28,10 +28,15 @@ export default defineComponent({
             this.$emit('update:modelValue', this.localValue);
         },
     },
+    watch: {
+        modelValue(value: string, old: string) {
+            this.localValue = value;
+        }
+    },
     mounted() {
         this.$nextTick(() => {
             this.localValue = this.modelValue;
-        });
+        })
     }
 });
 </script>
